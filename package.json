@@ -1,0 +1,26 @@
+{
+  "name": "kagi",
+  "version": "1.0.0",
+  "description": "Kagi Password Vault encryption core",
+  "main": "dist/services/encryption/index.js",
+  "types": "dist/services/encryption/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "node dist/scratch/test_crypto.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "expo-crypto": "^13.0.0",
+    "expo-file-system": "^17.0.0",
+    "expo-secure-store": "^13.0.0",
+    "expo-sqlite": "^14.0.0",
+    "react-native-aes-crypto": "^2.1.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  }
+}

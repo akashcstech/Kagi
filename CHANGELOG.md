@@ -2,6 +2,16 @@
 
 All notable changes to the Kagi Password Vault project will be documented in this file.
 
+## [1.8.0] - 2026-07-06
+
+### Added
+- **Search & Filter Service (Feature 7)**: Implemented combined search across vault entries:
+  - Created `types/search.ts` — `SearchOptions` interface with optional `query`, `folderId`, and `tags` filters.
+  - Created `services/search/searchQueries.ts` — single SQL query joining `entries`, `entry_tags`, and `folders` tables; matches free-text against title, username, tag text, and folder name using `LIKE ? ESCAPE '\'` with `COLLATE NOCASE`; LIKE wildcards (`%`, `_`) in user input are escaped to prevent pattern injection.
+  - Created `services/search/searchService.ts` — `searchEntries(options)` orchestrates SQL search then applies an in-memory tag-chip filter (exact match, not substring) for any `options.tags` specified; reuses `mapEntryRowToListItem` and `findTagsForEntries` from the Entry Service to avoid duplication.
+  - Created `services/search/index.ts` — public API gate.
+- **Design**: SQL handles the heavy lifting (indexed columns), tag-chip filtering is a cheap post-filter pass; folder browsing is direct-children only (no recursion into subfolders) per spec.
+
 ## [1.7.0] - 2026-07-06
 
 ### Added

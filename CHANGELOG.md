@@ -2,6 +2,17 @@
 
 All notable changes to the Kagi Password Vault project will be documented in this file.
 
+## [1.9.0] - 2026-07-06
+
+### Added
+- **Password Generator Service (Feature 8)**: Implemented cryptographically secure password generation:
+  - Created `types/passwordGenerator.ts` — `PasswordGeneratorOptions` interface, `DEFAULT_PASSWORD_GENERATOR_OPTIONS` (20 chars, all categories on), `InvalidPasswordLengthError`, `NoCharacterSetSelectedError`.
+  - Created `services/passwordGenerator/charsets.ts` — four constant character pools: uppercase (A–Z), lowercase (a–z), numbers (0–9), symbols (`!@#$%^&*()-_=+[]{};:,.<>/?`).
+  - Created `services/passwordGenerator/secureRandomInt.ts` — `secureRandomInt(maxExclusive)` using rejection sampling (not modulo) to eliminate bias; `secureShuffle<T>` implementing Fisher-Yates with the same unbiased source.
+  - Created `services/passwordGenerator/passwordGeneratorService.ts` — `generatePassword(options)`: validates length (8–64) and charset selection, guarantees ≥1 character from every enabled category, fills remaining slots from the combined pool, then Fisher-Yates shuffles so the guaranteed positions are unpredictable.
+  - Created `services/passwordGenerator/index.ts` — public API gate.
+- **Security**: Rejection sampling (`Math.floor(256 / max) * max` threshold) ensures uniform distribution across character pools regardless of pool size — a common modulo-bias pitfall avoided.
+
 ## [1.8.0] - 2026-07-06
 
 ### Added

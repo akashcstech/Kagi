@@ -2,6 +2,17 @@
 
 All notable changes to the Kagi Password Vault project will be documented in this file.
 
+## [1.11.0] - 2026-07-07
+
+### Added
+- **Auto-Lock / Session Service (Feature 10)**: Idle-based vault locking with configurable timeout:
+  - **`database/migrations.ts`** — Migration v2: adds `app_settings` table (`key TEXT PK`, `value TEXT`) for non-sensitive preferences; never encrypted, intentionally separate from vault data.
+  - **`database/settingsStore.ts`** — `getSetting`, `setSetting` (UPSERT), `deleteSetting`; generic key/value accessors for `app_settings`; exported via `@/database` barrel.
+  - **`types/autoLock.ts`** — `AutoLockDuration` union (`1 | 5 | 15 | 'never'`), `AUTO_LOCK_OPTIONS` array, `DEFAULT_AUTO_LOCK_DURATION` (5 min), `AUTO_LOCK_SETTING_KEY`.
+  - **`services/autoLock/autoLockService.ts`** — `getAutoLockDuration` / `setAutoLockDuration` (persist to `app_settings` with safe `deserialize` fallback to default); `touchActivity()` delegates to `sessionManager.touch()`; `lockNow()` calls `lock()` then `clearClipboardNow()` (Feature 9 hook); `checkAndLockIfIdle()` pull-model check — reads idle time vs. threshold, locks only when threshold exceeded.
+  - **`services/autoLock/index.ts`** — public API barrel.
+- **Architecture**: Deliberately a **pull model** — no `setTimeout` for the lock trigger. Mobile OSes suspend JS timers when the app is backgrounded; the UI layer will call `checkAndLockIfIdle()` from an `AppState` foreground listener and a short in-foreground interval to reliably catch idle expiry on both iOS and Android.
+
 ## [1.10.0] - 2026-07-07
 
 ### Added

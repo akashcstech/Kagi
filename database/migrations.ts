@@ -64,6 +64,16 @@ export const MIGRATIONS: Migration[] = [
       VALUES ('${DEFAULT_FOLDER_ID}', '${DEFAULT_FOLDER_NAME}', NULL, 0, 1, strftime('%s','now') * 1000, strftime('%s','now') * 1000);
     `,
   },
+  {
+    version: 2,
+    description: 'Add app_settings table for non-sensitive preferences (e.g. auto-lock duration).',
+    sql: `
+      CREATE TABLE IF NOT EXISTS app_settings (
+        key   TEXT PRIMARY KEY NOT NULL,
+        value TEXT NOT NULL
+      );
+    `,
+  },
 ];
 
 export const LATEST_SCHEMA_VERSION = MIGRATIONS[MIGRATIONS.length - 1].version;

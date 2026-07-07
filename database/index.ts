@@ -3,5 +3,7 @@ export { DEFAULT_FOLDER_ID, DEFAULT_FOLDER_NAME, MAX_FOLDER_DEPTH, DATABASE_NAME
 export { LATEST_SCHEMA_VERSION } from './migrations';
 export type { Migration } from './migrations';
 
+export { getSetting, setSetting, deleteSetting } from './settingsStore';
+
 export type { FolderRow, EntryRow, EntryTagRow } from '@/types/database';
 export { DatabaseError } from '@/types/database';

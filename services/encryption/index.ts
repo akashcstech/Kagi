@@ -16,6 +16,25 @@ export {
 } from './constants';
 export { generateSaltHex, constantTimeEqual } from './random';
 
+// ---------------------------------------------------------------------------
+// Backup-friendly aliases
+// These expose the raw PBKDF2 machinery under generic names so the Backup
+// Service can derive keys from an independent backup password without going
+// through the master-password-specific MasterKeyRecord flow.
+// ---------------------------------------------------------------------------
+
+/** Alias for generateSaltHex — generates a fresh hex-encoded random salt. */
+export { generateSaltHex as generateSalt } from './random';
+
+/** Alias for deriveKeyPair — derives { encryptionKey, macKey } from any password + salt. */
+export { deriveKeyPair as deriveKeysFromPassword } from './keyDerivation';
+
+/** Alias for encrypt — encrypts a plaintext string and returns an EncryptedPayload. */
+export { encrypt as encryptString } from './aes';
+
+/** Alias for decrypt — decrypts an EncryptedPayload and returns plaintext. */
+export { decrypt as decryptString } from './aes';
+
 /**
  * Creates a new master password record and derives the initial key pair.
  * Used during user registration or setup.

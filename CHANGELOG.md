@@ -2,6 +2,19 @@
 
 All notable changes to the Kagi Password Vault project will be documented in this file.
 
+## [1.12.0] - 2026-07-07
+
+### Added
+- **Backup / Export Service (Feature 11)**: Full encrypted backup pipeline:
+  - **`types/backup.ts`** — `BackupFolder`, `BackupEntry`, `BackupPayload` (plaintext shape before encryption); `BackupEnvelope` (on-disk JSON — only `createdAt`, `salt`, `iterations` are readable, everything else is in the opaque encrypted `payload` blob); `BackupPasswordTooShortError`, `InvalidBackupFileError`, `WrongBackupPasswordError`; `BACKUP_FILE_EXTENSION` (`.kagi`), `BACKUP_FORMAT_VERSION` (`1`).
+  - **`services/backup/backupPayloadBuilder.ts`** — `buildBackupPayload()`: fetches all folders + fully-decrypted entries via their respective services (`listFolders`, `listAllEntries`, `getEntry`); no plaintext ever written to disk at this stage.
+  - **`services/backup/backupEnvelopeCrypto.ts`** — `encryptBackupEnvelope(payload, backupPassword)`: derives a fresh independent salt + key pair from the backup password (unrelated to the vault master password), serialises the payload to JSON, encrypts the whole thing as a single `EncryptedPayload` blob, wraps in a `BackupEnvelope`. `decryptBackupEnvelope()` is reserved for Feature 12 (Import) so encrypt/decrypt stay co-located.
+  - **`services/backup/backupService.ts`** — `exportBackup()` (build → encrypt → write to `documentDirectory`), `shareBackupFile()` (native share sheet via `expo-sharing`, no-ops gracefully if unavailable), `exportAndShareBackup()` (combined, primary UI entry point). Timestamp-stamped file names (`Kagi-Backup-YYYY-MM-DD-HHmmss.kagi`).
+  - **`services/backup/index.ts`** — public API barrel; pre-exports all three error classes so Feature 12 needs no barrel changes.
+
+### Changed
+- **`services/encryption/index.ts`** — Added four backup-friendly alias exports over existing internals: `generateSalt` (→ `generateSaltHex`), `deriveKeysFromPassword` (→ `deriveKeyPair`), `encryptString` (→ `encrypt`), `decryptString` (→ `decrypt`). No new logic — thin re-exports that give the Backup Service access to raw PBKDF2 machinery without going through the `MasterKeyRecord` flow.
+
 ## [1.11.0] - 2026-07-07
 
 ### Added

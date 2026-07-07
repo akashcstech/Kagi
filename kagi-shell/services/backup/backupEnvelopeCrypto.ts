@@ -22,7 +22,7 @@ export async function decryptBackupEnvelope(envelope: BackupEnvelope, backupPass
 
   let json: string;
   try {
-    json = decryptString(envelope.payload, keys.encryptionKey, keys.macKey);
+    json = await decryptString(envelope.payload, keys.encryptionKey, keys.macKey);
   } catch (err) {
     if (err instanceof IntegrityError) {
       throw new WrongBackupPasswordError();

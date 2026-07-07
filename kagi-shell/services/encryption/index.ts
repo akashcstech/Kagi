@@ -106,7 +106,7 @@ export function createFieldCipher(keys: DerivedKeyPair) {
     /**
      * Decrypts an EncryptedPayload using the bound keys.
      */
-    decrypt(payload: EncryptedPayload): string {
+    async decrypt(payload: EncryptedPayload): Promise<string> {
       return decrypt(payload, keys.encryptionKey, keys.macKey);
     },
   };

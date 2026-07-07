@@ -9,7 +9,7 @@ import { EncryptionError, DerivedKeyPair } from '@/types/encryption';
 async function pbkdf2(password: string, salt: string, context: string): Promise<string> {
   try {
     const saltedContext = `${salt}:${context}`;
-    const derived = await Aes.pbkdf2(password, saltedContext, PBKDF2_ITERATIONS, KEY_LENGTH_BITS, PBKDF2_HASH_ALGORITHM);
+    const derived = await Aes.pbkdf2(password, saltedContext, PBKDF2_ITERATIONS, KEY_LENGTH_BITS);
     return derived;
   } catch (err) {
     throw new EncryptionError(`PBKDF2 derivation failed: ${err instanceof Error ? err.message : String(err)}`);

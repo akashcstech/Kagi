@@ -4,7 +4,7 @@ import { EncryptedPayload } from '@/types/encryption';
 
 export interface FieldCipher {
   encrypt(plaintext: string): Promise<EncryptedPayload>;
-  decrypt(payload: EncryptedPayload): Promise<string>;
+  decrypt(payload: EncryptedPayload): string | Promise<string>;
 }
 
 function readPayload(ciphertext: string | null, iv: string | null, hmac: string | null): EncryptedPayload | null {

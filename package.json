@@ -12,9 +12,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "expo-clipboard": "^57.0.0",
     "expo-crypto": "^13.0.0",
+    "expo-document-picker": "^57.0.0",
     "expo-file-system": "^17.0.0",
     "expo-secure-store": "^13.0.0",
+    "expo-sharing": "^57.0.2",
     "expo-sqlite": "^14.0.0",
     "react-native-aes-crypto": "^2.1.0",
     "zod": "^3.23.0"

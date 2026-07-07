@@ -1,7 +1,6 @@
-import * as crypto from 'crypto';
+import Aes from 'react-native-aes-crypto';
 import { EncryptedPayload, EncryptionError, IntegrityError } from '../../types/encryption';
-import { AES_ALGORITHM, PBKDF2_HASH_ALGORITHM } from './constants';
-import { generateIVHex, constantTimeEqual } from './random';
+import { constantTimeEqual } from './random';
 
 /**
  * Encrypts a plaintext string using AES-256-CBC, and signs it using HMAC-SHA256
@@ -19,26 +18,16 @@ export async function encrypt(
   macKeyHex: string
 ): Promise<EncryptedPayload> {
   try {
-    const encKey = Buffer.from(encryptionKeyHex, 'hex');
-    const macKey = Buffer.from(macKeyHex, 'hex');
-
     // Generate a random 16-byte initialization vector (IV) for AES-256-CBC
-    const ivHex = await generateIVHex();
-    const iv = Buffer.from(ivHex, 'hex');
+    // Aes.randomKey takes length in bytes
+    const ivHex = await Aes.randomKey(16);
 
-    // Initialize the cipher
-    const cipher = crypto.createCipheriv(AES_ALGORITHM, encKey, iv);
-
-    // Perform encryption - Output as Base64
-    let ciphertext = cipher.update(plaintext, 'utf8', 'base64');
-    ciphertext += cipher.final('base64');
+    // Perform encryption - returns base64 string
+    const ciphertext = await Aes.encrypt(plaintext, encryptionKeyHex, ivHex, 'aes-256-cbc');
 
     // Compute HMAC-SHA256 signature over (IV + Ciphertext)
     // iv is hex-encoded, ciphertext is base64-encoded
-    const hmac = crypto.createHmac(PBKDF2_HASH_ALGORITHM, macKey);
-    hmac.update(ivHex, 'hex');
-    hmac.update(ciphertext, 'base64');
-    const hmacHex = hmac.digest('hex');
+    const hmacHex = await Aes.hmac256(ivHex + ciphertext, macKeyHex);
 
     return {
       ciphertext,
@@ -61,36 +50,24 @@ export async function encrypt(
  * @throws IntegrityError if the HMAC check fails.
  * @throws EncryptionError if the decryption process fails (e.g. padding corruption).
  */
-export function decrypt(
+export async function decrypt(
   payload: EncryptedPayload,
   encryptionKeyHex: string,
   macKeyHex: string
-): string {
-  const encKey = Buffer.from(encryptionKeyHex, 'hex');
-  const macKey = Buffer.from(macKeyHex, 'hex');
-
+): Promise<string> {
   // Verify signature first (constant-time compare to mitigate timing attacks)
-  const hmac = crypto.createHmac(PBKDF2_HASH_ALGORITHM, macKey);
-  hmac.update(payload.iv, 'hex');
-  hmac.update(payload.ciphertext, 'base64');
-  const computedHmacHex = hmac.digest('hex');
+  const computedHmacHex = await Aes.hmac256(payload.iv + payload.ciphertext, macKeyHex);
 
   if (!constantTimeEqual(computedHmacHex, payload.hmac)) {
     throw new IntegrityError();
   }
 
   try {
-    const iv = Buffer.from(payload.iv, 'hex');
-
-    // Initialize decipher
-    const decipher = crypto.createDecipheriv(AES_ALGORITHM, encKey, iv);
-
-    // Perform decryption - Input is Base64, Output is UTF-8
-    let decrypted = decipher.update(payload.ciphertext, 'base64', 'utf8');
-    decrypted += decipher.final('utf8');
-
+    // Perform decryption - returns UTF-8 string
+    const decrypted = await Aes.decrypt(payload.ciphertext, encryptionKeyHex, payload.iv, 'aes-256-cbc');
     return decrypted;
   } catch (error) {
     throw new EncryptionError('Decryption failed');
   }
 }
+

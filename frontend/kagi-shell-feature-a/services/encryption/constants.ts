@@ -11,13 +11,8 @@ export const PBKDF2_ITERATIONS = 100_000;
 /** Derived key length in bits (AES-256 + HMAC-SHA256 both need 256-bit keys). */
 export const KEY_LENGTH_BITS = 256;
 
-/**
- * NOTE: react-native-aes-crypto hardcodes SHA-512 for PBKDF2 in its native
- * Android/iOS implementation — no hash parameter is accepted by the library.
- * SHA-512 is stronger than SHA-256, so this is acceptable.
- * HMAC-SHA-256 is used separately for Encrypt-then-MAC via Aes.hmac256().
- */
-export const PBKDF2_HASH_ALGORITHM = 'sha512' as const; // actual algorithm used by the native layer
+/** PBKDF2 pseudorandom function. */
+export const PBKDF2_HASH_ALGORITHM = 'sha256';
 
 /** AES mode. CBC is paired with a separate HMAC below (encrypt-then-MAC) since CBC alone is not authenticated. */
 export const AES_ALGORITHM = 'aes-256-cbc';

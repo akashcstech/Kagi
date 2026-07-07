@@ -1,5 +1,5 @@
 import Aes from 'react-native-aes-crypto';
-import { PBKDF2_ITERATIONS, KEY_LENGTH_BITS, KEY_CONTEXT } from './constants';
+import { PBKDF2_ITERATIONS, KEY_LENGTH_BITS, PBKDF2_HASH_ALGORITHM, KEY_CONTEXT } from './constants';
 import { EncryptionError, DerivedKeyPair } from '@/types/encryption';
 
 /**
@@ -9,8 +9,6 @@ import { EncryptionError, DerivedKeyPair } from '@/types/encryption';
 async function pbkdf2(password: string, salt: string, context: string): Promise<string> {
   try {
     const saltedContext = `${salt}:${context}`;
-    // react-native-aes-crypto hardcodes SHA-512 internally — the 4-arg signature
-    // accepts no hash parameter. KEY_LENGTH_BITS is the output key length in bits.
     const derived = await Aes.pbkdf2(password, saltedContext, PBKDF2_ITERATIONS, KEY_LENGTH_BITS);
     return derived;
   } catch (err) {

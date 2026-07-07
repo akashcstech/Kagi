@@ -2,6 +2,16 @@
 
 All notable changes to the Kagi Password Vault project will be documented in this file.
 
+## [1.10.0] - 2026-07-07
+
+### Added
+- **Clipboard Service (Feature 9)**: Secure copy-and-auto-clear clipboard workflow:
+  - Created `types/clipboard.ts` — `CLIPBOARD_CLEAR_DELAY_MS` (30 s), `ClipboardEvent` discriminated union (`'copied' | 'cleared'`), `ClipboardEventListener` callback type.
+  - Created `services/clipboard/clipboardEvents.ts` — lightweight pub/sub `ClipboardEventEmitter` singleton; UI components (e.g. a global toast host) subscribe without coupling to service internals.
+  - Created `services/clipboard/clipboardService.ts` — `copyToClipboard(value, fieldLabel?)` writes to the system clipboard and schedules auto-clear after 30 s; `clearIfStillOurs()` reads the clipboard back and only wipes it if the value still matches what Kagi wrote (backs off if the user copied something else); `clearClipboardNow()` immediate-clear hook for Auto-Lock (Feature 10); `remainingClearMs()` returns milliseconds until the next scheduled clear for countdown UI.
+  - Created `services/clipboard/index.ts` — public API barrel.
+- **Security**: Ownership check before clearing prevents the service from wiping unrelated clipboard content the user copied in another app between copy and the 30 s timer.
+
 ## [1.9.0] - 2026-07-06
 
 ### Added

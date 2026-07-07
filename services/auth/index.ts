@@ -11,6 +11,8 @@ export {
   enableBiometrics,
   disableBiometrics,
   changeMasterPassword,
+  prepareMasterPasswordChange,
+  commitMasterPasswordChange,
   resetVaultCredentials,
 } from './authService';
 export type { ChangeMasterPasswordResult } from './authService';

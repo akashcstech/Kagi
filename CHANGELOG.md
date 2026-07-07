@@ -2,6 +2,22 @@
 
 All notable changes to the Kagi Password Vault project will be documented in this file.
 
+## [1.14.0] - 2026-07-07
+
+### Added
+- **Settings Service (Feature 13)**: Single import surface for all settings-screen operations:
+  - **`types/settings.ts`** — `ThemePreference` (`'light' | 'dark' | 'system'`), `DEFAULT_THEME` (`'system'`), `THEME_SETTING_KEY`, `SettingsSnapshot` (theme + autoLockDuration + biometricEnabled).
+  - **`services/settings/themeService.ts`** — `getThemePreference()` / `setThemePreference()` backed by the `app_settings` table; type-guard fallback ensures any unrecognised persisted value safely returns `'system'`.
+  - **`services/settings/settingsService.ts`** — `getSettingsSnapshot()` (parallel fetch of all three prefs for screen load); `changeMasterPasswordSafely()` (correct three-phase orchestration: prepare → re-encrypt → commit, see Security below); `deleteVaultCompletely()` (SecureStore clear + SQLite file delete); re-exports for theme, auto-lock, and biometrics so the Settings screen has one import path.
+  - **`services/settings/index.ts`** — public API barrel.
+
+### Fixed
+- **Feature 3 correctness gap (changeMasterPassword)**: The original implementation persisted the new `MasterKeyRecord` before entries were re-encrypted, which could leave the vault in a state where the new password logs in but cannot decrypt vault data. Fixed by splitting into two functions:
+  - `prepareMasterPasswordChange(currentPassword, newPassword)` — verifies the current password, derives new keys and a new record; **does not persist anything**.
+  - `commitMasterPasswordChange(newRecord, newKeys)` — persists the record and starts the new session; only called after `reencryptAllEntries` succeeds.
+  - `changeMasterPassword()` is retained as a thin wrapper (for tests / callers that don't need re-encryption) delegating to the two new phases.
+  - Both new functions are exported from `@/services/auth`.
+
 ## [1.13.0] - 2026-07-07
 
 ### Added

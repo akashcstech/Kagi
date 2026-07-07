@@ -110,10 +110,14 @@ export interface ChangeMasterPasswordResult {
   newKeys: DerivedKeyPair;
 }
 
-export async function changeMasterPassword(
+/**
+ * Phase 1: Verify the current password and derive new keys/record.
+ * Does NOT persist anything — safe to call before a re-encryption pass.
+ */
+export async function prepareMasterPasswordChange(
   currentPassword: string,
   newPassword: string,
-): Promise<ChangeMasterPasswordResult> {
+): Promise<ChangeMasterPasswordResult & { newRecord: MasterKeyRecord }> {
   const record = await loadMasterKeyRecord();
   if (!record) {
     throw new VaultNotInitializedError();
@@ -128,11 +132,31 @@ export async function changeMasterPassword(
 
   const { record: newRecord, keys: newKeys } = await createMasterPassword(newPassword);
 
+  return { oldKeys, newKeys, newRecord };
+}
+
+/**
+ * Phase 2: Persist the new master record and start a new session.
+ * Only called after all entries have been successfully re-encrypted
+ * under newKeys, so a failure before this point leaves the vault intact.
+ */
+export async function commitMasterPasswordChange(newRecord: MasterKeyRecord, newKeys: DerivedKeyPair): Promise<void> {
   await disableBiometricUnlock();
   await saveMasterKeyRecord(newRecord);
-
   sessionManager.start(newKeys);
+}
 
+/**
+ * Convenience wrapper for callers that don't need the two-phase split
+ * (e.g. tests). Note: this does NOT re-encrypt entries — use
+ * changeMasterPasswordSafely() in the Settings Service for that.
+ */
+export async function changeMasterPassword(
+  currentPassword: string,
+  newPassword: string,
+): Promise<ChangeMasterPasswordResult> {
+  const { oldKeys, newKeys, newRecord } = await prepareMasterPasswordChange(currentPassword, newPassword);
+  await commitMasterPasswordChange(newRecord, newKeys);
   return { oldKeys, newKeys };
 }
 

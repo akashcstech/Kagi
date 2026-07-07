@@ -2,6 +2,21 @@
 
 All notable changes to the Kagi Password Vault project will be documented in this file.
 
+## [1.13.0] - 2026-07-07
+
+### Added
+- **Import / Restore Service (Feature 12)**: Two-phase, transaction-safe vault restore from `.kagi` backup files:
+  - **`services/backup/backupEnvelopeCrypto.ts`** — Added `decryptBackupEnvelope(envelope, backupPassword)`: re-derives keys from the envelope's salt, decrypts the payload blob, maps `IntegrityError` → `WrongBackupPasswordError` for a clean UI error surface, and validates the decrypted JSON before returning.
+  - **`services/restore/filePicker.ts`** — `pickBackupFile()`: wraps `expo-document-picker` with `type: '*/*'` and `copyToCacheDirectory: true` for broadest OS compatibility with the custom `.kagi` extension.
+  - **`services/restore/backupValidation.ts`** — `validateEnvelopeShape()` (pre-decrypt, checks envelope structure fields) and `validatePayloadShape()` (post-decrypt, checks folders/entries arrays). Both throw descriptive `InvalidBackupFileError` messages. Runs validation in two stages to fail fast before triggering expensive PBKDF2.
+  - **`services/restore/restoreQueries.ts`** — `wipeAllVaultData()` (entries first, then folders, respecting the FK RESTRICT); `insertFoldersRespectingHierarchy()` (topological-order insertion with a circular-reference guard + fallback to NULL parent); `insertRestoredEntryRow()` + `insertRestoredEntryTags()`.
+  - **`services/restore/restoreService.ts`** — `previewBackup(fileUri, backupPassword)`: read-only — decrypts and validates without touching the vault, returns `BackupPreview` (folder/entry counts + `exportedAt`) for a meaningful confirmation dialog. `restoreFromBackup(payload)`: destructive commit wrapped in a single transaction (rolls back on any failure); re-encrypts all secrets under the current session keys — the backup password's keys never enter the live vault.
+  - **`services/restore/index.ts`** — public API barrel.
+
+### Changed
+- **`services/backup/backupEnvelopeCrypto.ts`** — `decryptBackupEnvelope` added (symmetric pair to `encryptBackupEnvelope`, co-located as planned).
+- **`services/backup/index.ts`** — Re-exports `decryptBackupEnvelope`.
+
 ## [1.12.0] - 2026-07-07
 
 ### Added

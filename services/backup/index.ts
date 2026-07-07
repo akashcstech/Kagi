@@ -1,6 +1,6 @@
 export { exportBackup, shareBackupFile, exportAndShareBackup } from './backupService';
 export { buildBackupPayload } from './backupPayloadBuilder';
-export { encryptBackupEnvelope } from './backupEnvelopeCrypto';
+export { encryptBackupEnvelope, decryptBackupEnvelope } from './backupEnvelopeCrypto';
 
 export type { BackupPayload, BackupFolder, BackupEntry, BackupEnvelope } from '@/types/backup';
 export {
